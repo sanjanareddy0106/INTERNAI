@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>InternAI – Smart Internship Recommendation System</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav>
+  <div class="logo" onclick="go('home')">Intern<span>AI</span></div>
+  <div>
+    <button onclick="go('home')">Home</button>
+    <button onclick="go('form')">Find Internships</button>
+    <button onclick="go('career')">Career Guidance</button>
+    <button onclick="go('method')">How it works</button>
+  </div>
+</nav>
+
+<!-- 1. HOME PAGE -->
+<section id="home" class="view on">
+  <div class="hero">
+    <h1>Find the internship that fits <span style="color:var(--pri)">you</span></h1>
+    <p>InternAI is an explainable recommendation system that matches your skills, interests, location and academic background with internships – and guides your career path.</p>
+    <button class="btn" onclick="go('form')">Get Started →</button>
+    <button class="btn ghost" onclick="go('method')">How it works</button>
+  </div>
+
+
+  <div class="grid">
+    <div class="card">
+      <h3>🎯 Transparent scoring</h3>
+      <p>Every match shows exactly how many points came from skills, domain, location and academics.</p>
+    </div>
+    <div class="card">
+      <h3>🧩 Skill-gap analysis</h3>
+      <p>Matched skills in green, missing skills in orange – with a free resource to learn the next one.</p>
+    </div>
+    <div class="card">
+      <h3>🧠 Smart matching</h3>
+      <p>Synonym-aware: "JS" = JavaScript, "ML" = Machine Learning. Case and spacing never matter.</p>
+    </div>
+    <div class="card">
+      <h3>🧭 Career guidance</h3>
+      <p>Role paths, roadmap and certifications for your chosen domain, generated with your results.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 2. STUDENT PROFILE -->
+<section id="form" class="view">
+  <h2>Tell us about yourself</h2>
+  <p class="sub">Your profile is saved in this browser, so you won't need to retype it.</p>
+
+  <div class="card">
+    <label>Student Name</label>
+    <input id="name" placeholder="e.g. Ananya Reddy">
+
+    <label>Skills</label>
+    <div class="tags" id="tagbox">
+      <input id="skin" list="sklist" placeholder="Type a skill and press Enter or comma">
+    </div>
+
+    <datalist id="sklist"></datalist>
+    <div class="hint">Try: Python, JS, ML, SQL, React, Networking …</div>
+
+    <div class="row">
+      <div>
+        <label>Preferred Domain</label>
+        <select id="domain">
+          <option value="">Select your domain</option>
+        </select>
+      </div>
+      <div>
+        <label>Preferred Location</label>
+        <select id="loc">
+          <option value="">Select location</option>
+        </select>
+      </div>
+    </div>
+
+    <label>Academic Background</label>
+    <select id="acad"></select>
+
+    <div style="margin-top:22px">
+      <button class="btn" onclick="run()">Find Internships</button>
+      <button class="btn ghost" onclick="resetForm()">Clear</button>
+    </div>
+  </div>
+</section>
+
+<!-- 3. INTERNSHIP RESULTS -->
+<section id="results" class="view">
+  <h2 id="rtitle">Your recommendations</h2>
+  <p class="sub" id="rsub"></p>
+
+
+  <div id="resultSummary" class="summary"></div>
+
+  <div class="filters">
+    <select id="fd" onchange="render()">
+      <option value="">All domains</option>
+    </select>
+
+    <select id="fl" onchange="render()">
+      <option value="">All locations</option>
+    </select>
+
+    <select id="fm" onchange="render()">
+      <option value="0">Any match %</option>
+      <option value="40">≥ 40%</option>
+      <option value="60">≥ 60%</option>
+      <option value="80">≥ 80%</option>
+    </select>
+
+    <select id="fs" onchange="render()">
+      <option value="score">Sort: Best match</option>
+      <option value="skills">Sort: Skills score</option>
+      <option value="title">Sort: Title A–Z</option>
+    </select>
+
+    <button class="btn ghost" onclick="go('form')">Edit profile</button>
+    <button class="btn ghost" onclick="clearFilters()">Clear filters</button>
+    <button class="btn ghost" onclick="go('career')">🧭 View career guidance</button>
+  </div>
+
+  <div id="list"></div>
+</section>
+
+<!-- 4. CAREER GUIDANCE -->
+<section id="career" class="view">
+  <h2>Career Guidance</h2>
+  <p class="sub" id="csub">Choose a domain to see roles, a roadmap and certifications.</p>
+
+  <select id="cd" onchange="renderCareer()" style="max-width:320px;margin-bottom:18px"></select>
+
+  <div id="cbody"></div>
+</section>
+
+<!-- 5. HOW IT WORKS -->
+<section id="method" class="view">
+  <h2>How the scoring works</h2>
+  <p class="sub">Match Score (0–100) = Skills + Domain + Location + Academic</p>
+
+  <div class="card">
+    <p><b>Skills (max 50)</b> = 50 × (matched required skills ÷ total required skills), after normalising case, spaces and synonyms.</p>
+    <br>
+    <p><b>Domain (max 25)</b> = 25 if the internship domain equals the preferred domain, otherwise 0.</p>
+    <br>
+    <p><b>Location (max 15)</b> = 15 if same city or the internship is Remote; 7.5 for a different city; 7.5 if the student prefers Remote but the role is on-site.</p>
+    <br>
+    <p><b>Academic (max 10)</b> = 10 if the branch is listed for the internship; 5 for a related branch group; otherwise 0.</p>
+  </div>
+
+  <p class="sub" style="margin-top:16px">
+    Weights are defined in one place (<code>W</code>) in the code and can be tuned.
+  </p>
+
+  <div class="notice">
+    <b>Important:</b> The current prototype uses sample internship records and rule-based matching. It does not fetch real-time vacancies, verify company listings, or submit applications. The score explains how closely a sample role matches the profile; it is not a hiring probability.
+  </div>
+</section>
+
+<footer>
+  InternAI Prototype · Explainable internship matching, skill-gap analysis &amp; career guidance
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
